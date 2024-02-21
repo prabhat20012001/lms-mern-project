@@ -1,6 +1,7 @@
 const mongoose=require('mongoose')
 
 const {Schema}=mongoose;
+const JWT=require('jsonwebtoken')
 
 
 const userSchema=new Schema({
@@ -37,6 +38,16 @@ unique:[true,'already registered']
     }
 
 )
+
+userSchema.methods={
+    jwtToken(){
+        return JWT.sign(
+            {id:this._id,email:this.email},
+            process.env.SECRET,
+            {expiresIn:'24h'}
+        )
+    }
+}
 
 
 
