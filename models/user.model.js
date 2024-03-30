@@ -1,5 +1,6 @@
 import { Schema,model } from "mongoose";
-
+import bcrypt from 'bcryptjs'
+import { Jwt } from "jsonwebtoken";
 const userSchema=new Schema({
 fullName:{
     type:'String',
@@ -42,7 +43,35 @@ forgotPasswordToken:String,
 forgotPasswordExpiry:Date
 },{
     timestamps:true
+});
+
+
+userSchema.pre('save',async function(next){
+    if(!this.isModified('password')){
+        return next()
+    }
+    this.password=await bcrypt.hash(this.password,10)
 })
+
+userSchema.methods={
+    generateJWTToken:async function(){
+        return await jwt.sign(
+            {
+            id:this._id,
+            email:this.email,
+            subscription:this.subscription,
+            role:this.role,
+            },
+             process.env.JWT_SECRET,
+            {
+               expiresIn:process.env.JWT_EXPIRY,
+            }
+ 
+            
+
+        )
+    }
+}
 
 const User=model('User',userSchema)
 export default User;
